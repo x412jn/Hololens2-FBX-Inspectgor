@@ -14,6 +14,9 @@ namespace BCCH
 {
     public class SimulationManager : MonoBehaviour
     {
+        //Singleton
+        public static SimulationManager instance;
+
         #region CORE ATTACHMENT
 
         //REGISTER VARIABLES
@@ -39,13 +42,13 @@ namespace BCCH
 
         [HideInInspector]
         public GameObject REG_CurrentSectioning_Plane;
-        
+
         [HideInInspector]
         public Transform REG_ANCHOR_SpawnAnchor;
         [HideInInspector]
         public Transform REG_ANCHOR_SpawnParent;
 
-        
+
 
         //public Transform REG_ANCHOR_VuforiaTrackable;
 
@@ -76,7 +79,7 @@ namespace BCCH
         [HideInInspector]
         public List<string> REG_List_CurrentFileList_MultiMedia;
 
-        
+
 
         //VUFORIA
         [HideInInspector]
@@ -137,12 +140,6 @@ namespace BCCH
 
         #endregion //CORE ATTACHMENT
 
-        #region UI
-        [Space]
-        [Header("UI MANAGER")]
-        public SepUiManager uiManager;
-
-        #endregion //UI
 
         #region file import
 
@@ -178,7 +175,7 @@ namespace BCCH
         //Switch Template
         public GameObject HOLDER_Prefab_ImportSwitchTemplate;
 
-        
+
 
         public void ListBlobs()
         {
@@ -228,12 +225,12 @@ namespace BCCH
             items_Blob.AddRange(blobs);
             //tableView.ReloadData();
 
-            for(int i = 0; i < items_Blob.Count; i++)
+            for (int i = 0; i < items_Blob.Count; i++)
             {
                 REG_List_CurrentFileList_MultiMedia.Add(items_Blob[i].Name);
                 Debug.Log("On adding blob number: " + i + "\nname: " + REG_List_CurrentFileList_MultiMedia[i]);
             }
-            
+
         }
 
 
@@ -243,8 +240,8 @@ namespace BCCH
             items_Container.Clear();
             REG_List_CurrentContainerList.Clear();
             items_Container.AddRange(containers);
-            
-            for(int i = 0; i < items_Container.Count; i++)
+
+            for (int i = 0; i < items_Container.Count; i++)
             {
                 REG_List_CurrentContainerList.Add(items_Container[i].Name);
                 Debug.Log("On adding container number: " + i + "\nname: " + REG_List_CurrentContainerList[i]);
@@ -303,7 +300,7 @@ namespace BCCH
                 SectionningCapePanel.SetActive(true);
             }
             //Log.Text(label, "Sectionning Enabled");
-            
+
         }
 
         public void Sectionning_Disable()
@@ -341,10 +338,10 @@ namespace BCCH
         //    }
         //}
 
-        
+
         public void Overlay_OnTracked()
         {
-            
+
 
             //if(REG_CurrentObject_Spawned != null && CHECK_downloadComplete)
             //{
@@ -378,7 +375,7 @@ namespace BCCH
             REG_CurrentObject_Spawned.transform.transform.localScale = Vector3.one;
             REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero;
             REG_CurrentObject_Spawned.transform.localRotation = Quaternion.identity;
-            //uiManager.overlayStatusDisplay.text = "Off";
+            //UiManager.instance.overlayStatusDisplay.text = "Off";
             label_Overlay.text = " ";
         }
 
@@ -408,6 +405,15 @@ namespace BCCH
 
         private void Awake()
         {
+            //SINGLETON
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else
+            {
+                Destroy(this.gameObject);
+            }
             REG_CALIBRATION_CameraInitPos = Vector3.zero;
         }
 
@@ -437,7 +443,7 @@ namespace BCCH
             items_Blob = new List<Blob>();
             items_Container = new List<Container>();
 
-            
+
 
 
             //Detect container list and store it into the list
@@ -451,7 +457,7 @@ namespace BCCH
             //Disable Sectionning
             Sectionning_Disable();
 
-            
+
             //deregister current sectionning pannel
             REG_CurrentSectioning_Plane = null;
 
@@ -461,13 +467,13 @@ namespace BCCH
             {
                 Overlay_OnEnd();
             }
-            
+
 
             //Instantiate Toggle Buttons
-            uiManager.OnInitiateButtons_Toggle();
+            UiManager.instance.OnInitiateButtons_Toggle();
 
             //Instantiate multimedia buttons
-            uiManager.OnInstantiateButtons_MultiMedia();
+            UiManager.instance.OnInstantiateButtons_MultiMedia();
 
             //Instantiate Spawned Object Information
             Debug.Log("ON CLEARING LISTS");
@@ -491,11 +497,11 @@ namespace BCCH
             {
                 REG_List_CurrentFileList_MultiMedia.Clear();
             }
-            
+
             if (REG_List_CurrentInstance_MultiMedia.Count > 0)
             {
                 Debug.Log("ON DESTROY MULTI MEDIA INSTANCE");
-                for(int i = 0; i < REG_List_CurrentInstance_MultiMedia.Count; i++)
+                for (int i = 0; i < REG_List_CurrentInstance_MultiMedia.Count; i++)
                 {
                     if (REG_List_CurrentInstance_MultiMedia[i] != null)
                     {
@@ -506,7 +512,7 @@ namespace BCCH
             }
         }
 
-        
+
 
         #region LEGACY
 
@@ -554,7 +560,7 @@ namespace BCCH
         //        if (unityWebRequest.result == UnityWebRequest.Result.ConnectionError || unityWebRequest.result == UnityWebRequest.Result.ProtocolError)
         //        {
         //            Debug.Log("Error: " + unityWebRequest.error);
-        //            uiManager.OnCallMessage("List: " + unityWebRequest.error + "/n url: " + GetFileIndexUrl());
+        //            UiManager.instance.OnCallMessage("List: " + unityWebRequest.error + "/n url: " + GetFileIndexUrl());
         //            state_startDownloadFileList = false;
         //        }
         //        else
@@ -589,7 +595,7 @@ namespace BCCH
         //        if (unityWebRequest.result == UnityWebRequest.Result.ConnectionError || unityWebRequest.result == UnityWebRequest.Result.ProtocolError)
         //        {
         //            Debug.Log("Error: " + unityWebRequest.error);
-        //            uiManager.OnCallMessage("Host: " + unityWebRequest.error);
+        //            UiManager.instance.OnCallMessage("Host: " + unityWebRequest.error);
         //            state_startDownloadHost = false;
         //        }
         //        else

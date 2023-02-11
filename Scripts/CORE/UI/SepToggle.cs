@@ -12,9 +12,15 @@ namespace BCCH
         [HideInInspector]
         public int id;
 
+        public DelegateBody delegateBody = new DelegateBody();
+
+        public delegate void OnToggleObject();
+        public OnToggleObject onToggleObject;
+
         public void ToggleObject()
         {
             toggleObject.SetActive(!toggleObject.activeSelf);
+            onToggleObject();
         }
     }
 }

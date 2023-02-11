@@ -7,17 +7,19 @@ using Microsoft.MixedReality.Toolkit.Experimental.UI;
 using Microsoft.MixedReality.Toolkit.Utilities;
 using Microsoft.MixedReality.Toolkit.Utilities.Solvers;
 using TriLibCore.Samples;
+using System.ComponentModel;
 
 namespace BCCH
 {
-    public class SepUiManager : MonoBehaviour
+    public class UiManager : MonoBehaviour
     {
+        //Singleton
+        public static UiManager instance;
+
         #region core attachment
         //[SerializeField]
         //HandColliderTrack handColliderTrack;
 
-        [SerializeField]
-        SimulationManager simulationManager;
 
         public DirectionalIndicator directionalIndicator;
 
@@ -99,7 +101,6 @@ namespace BCCH
 
         public void OnDisableMenu_All()
         {
-            //simulationManager.Sectionning_Disable();
             menu_import.SetActive(false);
             menu_multiuser.SetActive(false);
             menu_sectioning.SetActive(false);
@@ -112,10 +113,7 @@ namespace BCCH
 
         public void OnDisableMenu_All_WithOverlay()
         {
-            if (simulationManager.REG_VUFORIA_CurrentTrackable != null)
-            {
-                simulationManager.Overlay_OnEnd();
-            }
+            SimulationManager.instance.Overlay_OnEnd();
             menu_import.SetActive(false);
             menu_multiuser.SetActive(false);
             menu_sectioning.SetActive(false);
@@ -133,6 +131,17 @@ namespace BCCH
 
         private void Start()
         {
+            //SINGLETON INIT
+            if (instance == null)
+            {
+                instance = this;
+            }
+            else
+            {
+                Destroy(this.gameObject);
+            }
+
+
             //ATTACHING OBJECTS
             //P.S. Im concerning about wether hand menu would not presence when hands are not detected,
             //Therefore Im using tag finding to binds the object
@@ -177,8 +186,8 @@ namespace BCCH
         {
             if (!CHECK_tutorial)
             {
-                
-                simulationManager.label_Overlay.text = " ";
+
+                SimulationManager.instance.label_Overlay.text = " ";
                 CHECK_tutorial = true;
             }
         }
@@ -199,53 +208,52 @@ namespace BCCH
 
         public void SpawnContainerList()
         {
-            simulationManager.ListContainers();
+            SimulationManager.instance.ListContainers();
             GameObject tempObject;
             SepFileImport fileImport;
             TextMeshPro toggleName;
 
 
             //Solution: point towards container
-            if (simulationManager.REG_List_CurrentContainerList.Count != 0)
+            if (SimulationManager.instance.REG_List_CurrentContainerList.Count != 0)
             {
 
                 //Initiate the switch
                 if (!importSpawned)
                 {
                     importSpawned = true;
-                    //StartCoroutine(simulationManager.SpawnFileList_fbx());
-                    for (int i = 0; i < simulationManager.REG_List_CurrentContainerList.Count; i++)
+                    //StartCoroutine(SimulationManager.instance.SpawnFileList_fbx());
+                    for (int i = 0; i < SimulationManager.instance.REG_List_CurrentContainerList.Count; i++)
                     {
                         //Update current temp container
-                        //simulationManager.TEMP_INFO_CurrentContainer = simulationManager.REG_List_CurrentContainerList[i];
+                        //SimulationManager.instance.TEMP_INFO_CurrentContainer = SimulationManager.instance.REG_List_CurrentContainerList[i];
 
 
-                        tempObject = Instantiate(simulationManager.HOLDER_Prefab_ImportSwitchTemplate, switchField_Import);
+                        tempObject = Instantiate(SimulationManager.instance.HOLDER_Prefab_ImportSwitchTemplate, switchField_Import);
                         REG_Switches_Import.Add(tempObject);
                         fileImport = tempObject.GetComponent<SepFileImport>();
                         fileImport.id = (REG_Switches_Import.Count - 1);
-                        fileImport.simulationManager = simulationManager;
-                        fileImport.blobService = simulationManager.client.GetBlobService();
+                        fileImport.blobService = SimulationManager.instance.client.GetBlobService();
                         fileImport.fileNameList = new List<string>();
                         fileImport.fileNameList_MultiMedia = new List<string>();
                         fileImport.uiManager = this;
-                        fileImport.downloadInfo_Container = simulationManager.REG_List_CurrentContainerList[i];
+                        fileImport.downloadInfo_Container = SimulationManager.instance.REG_List_CurrentContainerList[i];
                         fileImport.ListBlobs();
                         Debug.Log("Generate file button for: " + fileImport.downloadInfo_Container);
 
                         toggleName = tempObject.transform.Find("IconAndText").Find("TextMeshPro").GetComponent<TextMeshPro>();
-                        toggleName.text = simulationManager.REG_List_CurrentContainerList[i];
+                        toggleName.text = SimulationManager.instance.REG_List_CurrentContainerList[i];
                     }
                     sort_Import.UpdateCollection();
 
-                    
+
                 }
                 else
                 {
-                    Log.Text(simulationManager.label, "Container list spawned");
+                    Log.Text(SimulationManager.instance.label, "Container list spawned");
                 }
 
-                
+
             }
             else
             {
@@ -301,9 +309,9 @@ namespace BCCH
             //}
 
             int n = 0;
-            if (simulationManager.REG_CurrentObject != null)
+            if (SimulationManager.instance.REG_CurrentObject != null)
             {
-                toggleTarget = simulationManager.REG_CurrentObject.transform.Find(simulationManager.REG_NAME_SpawnedObject).gameObject;
+                toggleTarget = SimulationManager.instance.REG_CurrentObject.transform.Find(SimulationManager.instance.REG_NAME_SpawnedObject).gameObject;
                 Transform[] parentTransform = toggleTarget.transform.GetComponentsInChildren<Transform>();
                 foreach (Transform child in parentTransform)
                 {
@@ -330,14 +338,14 @@ namespace BCCH
             TextMeshPro toggleName;
             ToggleChildAssign();
 
-            if (simulationManager.CHECK_downloadComplete)
+            if (SimulationManager.instance.CHECK_downloadComplete)
             {
                 if (!toggleSpawned)
                 {
                     toggleSpawned = true;
                     for (int i = 0; i < toggleSubChildren.Count; i++)
                     {
-                        tempObject = Instantiate(simulationManager.HOLDER_Prefab_ToggleSwitchTemplate, switchField_Toggle);
+                        tempObject = Instantiate(SimulationManager.instance.HOLDER_Prefab_ToggleSwitchTemplate, switchField_Toggle);
                         REG_Switches_Toggle.Add(tempObject);
                         toggle = tempObject.GetComponent<SepToggle>();
                         toggle.id = (REG_Switches_Toggle.Count - 1);
@@ -378,7 +386,7 @@ namespace BCCH
                 sort_Toggle.UpdateCollection();
             }
             toggleSpawned = false;
-            
+
         }
 
         #endregion //TOGGLING METHODS
@@ -393,46 +401,46 @@ namespace BCCH
         {
             if (Vuforia.VuforiaRuntime.Instance.InitializationState != Vuforia.VuforiaRuntime.InitState.INITIALIZED)
             {
-                Log.Text(simulationManager.label, "Vuforia is not calibrated");
+                Log.Text(SimulationManager.instance.label, "Vuforia is not calibrated");
                 return;
             }
-            if (simulationManager.REG_INFO_IsVuforiaExist && !simulationManager.CHECK_startDownloading_dat && !simulationManager.CHECK_startDownloading_xml)
+            if (SimulationManager.instance.REG_INFO_IsVuforiaExist && !SimulationManager.instance.CHECK_startDownloading_dat && !SimulationManager.instance.CHECK_startDownloading_xml)
             {
-                if (simulationManager.REG_CurrentObject_Spawned != null && simulationManager.CHECK_downloadComplete)
+                if (SimulationManager.instance.REG_CurrentObject_Spawned != null && SimulationManager.instance.CHECK_downloadComplete)
                 {
                     OnDisableMenu_All();
-                    simulationManager.CHECK_startOverlay = !simulationManager.CHECK_startOverlay;
-                    if (simulationManager.CHECK_startOverlay)
+                    SimulationManager.instance.CHECK_startOverlay = !SimulationManager.instance.CHECK_startOverlay;
+                    if (SimulationManager.instance.CHECK_startOverlay)
                     {
-                        simulationManager.Sectionning_Disable();
+                        SimulationManager.instance.Sectionning_Disable();
                         //overlayStatusDisplay.text = "On";
-                        Log.Text(simulationManager.label, "Please gaze at the physical model \nby placing it inside the frame");
-                        simulationManager.overlayManager.OnOverlayEnable(simulationManager.REG_INFO_VuforiaDataName_Xml);
-                        //simulationManager.overlayManager.OnOverlayEnable(simulationManager.REG_INFO_VuforiaDataName_Xml);
+                        Log.Text(SimulationManager.instance.label, "Please gaze at the physical model \nby placing it inside the frame");
+                        SimulationManager.instance.overlayManager.OnOverlayEnable(SimulationManager.instance.REG_INFO_VuforiaDataName_Xml);
+                        //SimulationManager.instance.overlayManager.OnOverlayEnable(SimulationManager.instance.REG_INFO_VuforiaDataName_Xml);
                     }
                     else
                     {
-                        //Log.Text(simulationManager.label, "Stop overlay", "Stop overlay");
-                        //simulationManager.overlayManager.OnEndVuforia();
-                        //simulationManager.REG_VUFORIA_CurrentTrackable = null;
-                        //simulationManager.REG_CurrentObject_Spawned.transform.parent = simulationManager.REG_ANCHOR_SpawnParent;
-                        //simulationManager.REG_CurrentObject_Spawned.transform.transform.localScale = Vector3.one;
-                        //simulationManager.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero;
-                        //simulationManager.REG_CurrentObject_Spawned.transform.localRotation = Quaternion.identity;
+                        //Log.Text(SimulationManager.instance.label, "Stop overlay", "Stop overlay");
+                        //SimulationManager.instance.overlayManager.OnEndVuforia();
+                        //SimulationManager.instance.REG_VUFORIA_CurrentTrackable = null;
+                        //SimulationManager.instance.REG_CurrentObject_Spawned.transform.parent = SimulationManager.instance.REG_ANCHOR_SpawnParent;
+                        //SimulationManager.instance.REG_CurrentObject_Spawned.transform.transform.localScale = Vector3.one;
+                        //SimulationManager.instance.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero;
+                        //SimulationManager.instance.REG_CurrentObject_Spawned.transform.localRotation = Quaternion.identity;
                         //overlayStatusDisplay.text = "Off";
-                        simulationManager.Overlay_OnEnd();
+                        SimulationManager.instance.Overlay_OnEnd();
                     }
-                    //simulationManager.Overlay_OnProcess();
+                    //SimulationManager.instance.Overlay_OnProcess();
                 }
                 else
                 {
                     Debug.Log("No object found");
-                    Log.Text(simulationManager.label, "No Object Found");
+                    Log.Text(SimulationManager.instance.label, "No Object Found");
                 }
             }
             else
             {
-                Log.Text(simulationManager.label, "VUFORIA DATA NOT EXIST");
+                Log.Text(SimulationManager.instance.label, "VUFORIA DATA NOT EXIST");
             }
         }
 
@@ -453,42 +461,41 @@ namespace BCCH
 
         public void SpawnMultiMediaList()
         {
-            
+
             GameObject tempObject;
             SepMultiMediaImport multiMediaImport;
             TextMeshPro toggleName;
 
 
             //Solution: point towards container
-            if (simulationManager.REG_List_CurrentFileList_MultiMedia.Count != 0)
+            if (SimulationManager.instance.REG_List_CurrentFileList_MultiMedia.Count != 0)
             {
 
                 //Initiate the switch
                 if (!REG_CHECK_multiMediaSpawned)
                 {
                     REG_CHECK_multiMediaSpawned = true;
-                    //StartCoroutine(simulationManager.SpawnFileList_fbx());
-                    for (int i = 0; i < simulationManager.REG_List_CurrentFileList_MultiMedia.Count; i++)
+                    //StartCoroutine(SimulationManager.instance.SpawnFileList_fbx());
+                    for (int i = 0; i < SimulationManager.instance.REG_List_CurrentFileList_MultiMedia.Count; i++)
                     {
                         //Update current temp container
-                        //simulationManager.TEMP_INFO_CurrentContainer = simulationManager.REG_List_CurrentContainerList[i];
+                        //SimulationManager.instance.TEMP_INFO_CurrentContainer = SimulationManager.instance.REG_List_CurrentContainerList[i];
 
 
-                        tempObject = Instantiate(simulationManager.HOLDER_Prefab_MultiMediaSwitchTemplate, switchField_MultiMedia);
+                        tempObject = Instantiate(SimulationManager.instance.HOLDER_Prefab_MultiMediaSwitchTemplate, switchField_MultiMedia);
                         REG_Switches_MultiMedia.Add(tempObject);
                         multiMediaImport = tempObject.GetComponent<SepMultiMediaImport>();
                         multiMediaImport.id = (REG_Switches_MultiMedia.Count - 1);
-                        multiMediaImport.simulationManager = simulationManager;
-                        multiMediaImport.blobService = simulationManager.client.GetBlobService();
-                        multiMediaImport.downloadInfo_fileName = simulationManager.REG_List_CurrentFileList_MultiMedia[i];
+                        multiMediaImport.blobService = SimulationManager.instance.client.GetBlobService();
+                        multiMediaImport.downloadInfo_fileName = SimulationManager.instance.REG_List_CurrentFileList_MultiMedia[i];
                         //fileImport.fileNameList = new List<string>();
                         multiMediaImport.uiManager = this;
-                        multiMediaImport.downloadInfo_container = simulationManager.REG_INFO_CurrentContainer;
+                        multiMediaImport.downloadInfo_container = SimulationManager.instance.REG_INFO_CurrentContainer;
                         multiMediaImport.GetPath();
                         Debug.Log("Generate file button for: " + multiMediaImport.downloadInfo_fileName);
 
                         toggleName = tempObject.transform.Find("IconAndText").Find("TextMeshPro").GetComponent<TextMeshPro>();
-                        toggleName.text = simulationManager.REG_List_CurrentFileList_MultiMedia[i];
+                        toggleName.text = SimulationManager.instance.REG_List_CurrentFileList_MultiMedia[i];
                     }
                     sort_MultiMedia.UpdateCollection();
 
@@ -496,7 +503,7 @@ namespace BCCH
                 }
                 else
                 {
-                    Log.Text(simulationManager.label, "Multi Media List Spawned");
+                    Log.Text(SimulationManager.instance.label, "Multi Media List Spawned");
                 }
 
 
@@ -515,7 +522,7 @@ namespace BCCH
         {
             if (REG_Switches_MultiMedia.Count > 0)
             {
-                for(int i=0;i< REG_Switches_MultiMedia.Count; i++)
+                for (int i = 0; i < REG_Switches_MultiMedia.Count; i++)
                 {
                     if (REG_Switches_MultiMedia[i] != null)
                     {
@@ -535,79 +542,21 @@ namespace BCCH
         public void OnTapSectionning()
         {
             OnDisableMenu_All_WithOverlay();
-            simulationManager.CHECK_STATE_Sectionning = !simulationManager.CHECK_STATE_Sectionning;
-            if (simulationManager.CHECK_STATE_Sectionning)
+            
+            SimulationManager.instance.CHECK_STATE_Sectionning = !SimulationManager.instance.CHECK_STATE_Sectionning;
+            if (SimulationManager.instance.CHECK_STATE_Sectionning)
             {
-                Log.Text(simulationManager.label, "Sectionning Enabled");
+                Log.Text(SimulationManager.instance.label, "Sectionning Enabled");
             }
             else
             {
-                Log.Text(simulationManager.label, "Sectionning Disabled");
+                Log.Text(SimulationManager.instance.label, "Sectionning Disabled");
             }
-            simulationManager.Sectionning_OnProcess(simulationManager.CHECK_STATE_Sectionning);
+            SimulationManager.instance.Sectionning_OnProcess(SimulationManager.instance.CHECK_STATE_Sectionning);
         }
 
         #endregion //SECTIONNING METHODS
 
-        #region LEGACY
-
-        //IMPORT
-
-        //public void SpawnFileList()
-        //{
-        //    simulationManager.ListBlobs();
-        //    GameObject tempObject;
-        //    SepFileImport fileImport;
-        //    TextMeshPro toggleName;
-
-        //    //Initiate the switch
-        //    if (importSpawned)
-        //    {
-        //        importSpawned = false;
-        //        for (int i = 0; i < REG_Switches_Import.Count; i++)
-        //        {
-        //            Destroy(REG_Switches_Import[i]);
-        //        }
-        //        REG_Switches_Import.Clear();
-        //    }
-
-
-        //    //Solution: point towards fbx
-        //    if (simulationManager.REG_List_CurrentFileList_MultiMedia.Count != 0)
-        //    {
-        //        importSpawned = true;
-        //        //StartCoroutine(simulationManager.SpawnFileList_fbx());
-        //        for (int i = 0; i < simulationManager.REG_List_CurrentFileList_MultiMedia.Count; i++)
-        //        {
-        //            tempObject = Instantiate(simulationManager.HOLDER_Prefab_ImportSwitchTemplate, switchField_Import);
-        //            //REG_Switches_Import.Add(tempObject);
-        //            fileImport = tempObject.GetComponent<SepFileImport>();
-        //            fileImport.simulationManager = simulationManager;
-        //            fileImport.uiManager = this;
-        //            fileImport.downloadInfo_FileName = simulationManager.REG_List_CurrentFileList_MultiMedia[i];
-        //            Debug.Log("Generate file button for: " + fileImport.downloadInfo_FileName);
-        //            toggleName = tempObject.transform.Find("IconAndText").Find("TextMeshPro").GetComponent<TextMeshPro>();
-        //            toggleName.text = simulationManager.REG_List_CurrentFileList_MultiMedia[i];
-        //        }
-        //        sort_Import.UpdateCollection();
-        //    }
-        //    else
-        //    {
-        //        Debug.Log("File List Not Found");
-        //        OnCallMessage("NO FILE LIST FOUND");
-        //    }
-        //}
-
-        //public void SpawnFileList_fbx()
-        //{
-        //    simulationManager.REG_INFO_CurrentContainer = simulationManager.container_model;
-        //    SpawnFileList();
-        //}
-
-
-
-
-        #endregion
 
 
     }

@@ -12,13 +12,9 @@ using Azure.StorageServices;
 
 namespace BCCH
 {
-    public class SepMultiMediaImport : MonoBehaviour
+    public class MultiMediaImport : MonoBehaviour
     {
         #region CORE ATTACHMENTS
-        [HideInInspector]
-        public SimulationManager simulationManager;
-        [HideInInspector]
-        public SepUiManager uiManager;
 
         public BlobService blobService;
 
@@ -93,8 +89,8 @@ namespace BCCH
             {
                 case TYPE.image:
                 case TYPE.video:
-                    GameObject tempObject = Instantiate(simulationManager.HOLDER_Prefab_MultiMediaPanel, simulationManager.REG_ANCHOR_MultiMediaAnchor);
-                    simulationManager.REG_List_CurrentInstance_MultiMedia.Add(tempObject);
+                    GameObject tempObject = Instantiate(SimulationManager.instance.HOLDER_Prefab_MultiMediaPanel, SimulationManager.instance.REG_ANCHOR_MultiMediaAnchor);
+                    SimulationManager.instance.REG_List_CurrentInstance_MultiMedia.Add(tempObject);
                     title = tempObject.transform.Find("TitleBar").Find("Title").GetComponent<TextMeshPro>();
                     imagePlane = tempObject.transform.Find("ImagePlane").gameObject;
                     videoPlane = tempObject.transform.Find("VideoPlane").gameObject;
@@ -117,7 +113,7 @@ namespace BCCH
                     {
                         TappedLoadVideoMedia();
                     }
-                    
+
                     break;
 
                 case TYPE.nope:
@@ -126,7 +122,7 @@ namespace BCCH
                 default:
                     return;
             }
-            
+
         }
 
         public void TappedLoadVideoMedia()
@@ -139,7 +135,7 @@ namespace BCCH
             }
             if (startDownloading)
             {
-                Log.Text(simulationManager.label, "On Pending Last Request");
+                Log.Text(SimulationManager.instance.label, "On Pending Last Request");
                 Debug.Log("On Pending Last Request");
                 return;
             }
@@ -148,7 +144,7 @@ namespace BCCH
                 startDownloading = true;
             }
             string resourcePath = downloadInfo_container + "/" + downloadInfo_fileName;
-            Log.Text(simulationManager.label, "Load: " + resourcePath);
+            Log.Text(SimulationManager.instance.label, "Load: " + resourcePath);
             Debug.Log("Load: " + resourcePath);
             StartCoroutine(blobService.GetBlob(GetByte_Video, resourcePath));
         }
@@ -159,11 +155,11 @@ namespace BCCH
             ChangeImage(new Texture2D(1, 1));
             if (startDownloading && !downloadComplete)
             {
-                Log.Text(simulationManager.label, "On Pending Last Request");
+                Log.Text(SimulationManager.instance.label, "On Pending Last Request");
                 Debug.Log("On Pending Last Request");
                 return;
             }
-            else if(!startDownloading&&!downloadComplete)
+            else if (!startDownloading && !downloadComplete)
             {
                 startDownloading = true;
             }
@@ -173,7 +169,7 @@ namespace BCCH
                 downloadComplete = false;
             }
             string resourcePath = downloadInfo_container + "/" + downloadInfo_fileName;
-            Log.Text(simulationManager.label, "Load: " + resourcePath);
+            Log.Text(SimulationManager.instance.label, "Load: " + resourcePath);
             Debug.Log("Load: " + resourcePath);
             StartCoroutine(blobService.GetImageBlob(GetImageBlobComplete, resourcePath));
         }
@@ -182,13 +178,13 @@ namespace BCCH
         {
             if (response.IsError)
             {
-                Log.Text(simulationManager.label, "Failed to load dat: " + response.StatusCode, response.ErrorMessage, Log.Level.Error);
+                Log.Text(SimulationManager.instance.label, "Failed to load dat: " + response.StatusCode, response.ErrorMessage, Log.Level.Error);
                 startDownloading = false;
                 downloadComplete = false;
             }
             else
             {
-                Log.Text(simulationManager.label, "Loaded video file:" + downloadInfo_fileName);
+                Log.Text(SimulationManager.instance.label, "Loaded video file:" + downloadInfo_fileName);
 
 
                 //!!!INTERGRATE BYTE DIRECTORY RECORD HERE!!!
@@ -207,14 +203,14 @@ namespace BCCH
         {
             if (response.IsError)
             {
-                Log.Text(simulationManager.label, "Failed to load image: " + response.StatusCode, response.ErrorMessage, Log.Level.Error);
+                Log.Text(SimulationManager.instance.label, "Failed to load image: " + response.StatusCode, response.ErrorMessage, Log.Level.Error);
                 Debug.LogError("Failed to load image: " + response.StatusCode);
                 startDownloading = false;
                 downloadComplete = false;
             }
             else
             {
-                Log.Text(simulationManager.label, "Loaded image:" + downloadInfo_fileName);
+                Log.Text(SimulationManager.instance.label, "Loaded image:" + downloadInfo_fileName);
                 Debug.Log("Loaded image:" + response.Url);
                 imagePlane.SetActive(true);
                 //saveData(response.Data, downloadInfo_fileName, downloadInfo_container);
@@ -256,7 +252,7 @@ namespace BCCH
 
         #region UTILITIES
 
-        
+
 
         private bool GetFileExist()
         {
@@ -272,7 +268,7 @@ namespace BCCH
 
         private string Check_FileType(string input)
         {
-            return simulationManager.textProfilier.GetFormat(input);
+            return SimulationManager.instance.textProfilier.GetFormat(input);
         }
 
 
@@ -300,7 +296,7 @@ namespace BCCH
         {
             if (string.IsNullOrEmpty(localPath) && !File.Exists(localPath))
             {
-                Log.Text(simulationManager.label, "Tap 'Capture screenshot' button", "Capture screenshot first", Log.Level.Warning);
+                Log.Text(SimulationManager.instance.label, "Tap 'Capture screenshot' button", "Capture screenshot first", Log.Level.Warning);
                 Debug.Log("Tap 'Capture screenshot' button");
                 return false;
             }
@@ -310,7 +306,7 @@ namespace BCCH
         public void GetPath_Container()
         {
             containerPath = Path.Combine(Application.persistentDataPath, downloadInfo_container);
-            
+
         }
 
         public void GetPath_File()

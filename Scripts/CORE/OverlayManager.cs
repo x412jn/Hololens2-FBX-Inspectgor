@@ -7,12 +7,8 @@ using System.Linq;
 
 namespace BCCH
 {
-    public class SepOverlayManager : MonoBehaviour
+    public class OverlayManager : MonoBehaviour
     {
-        
-        public SimulationManager simulationManager;
-
-
         DataSet dataSet;
         ObjectTracker objectTracker;
 
@@ -21,7 +17,7 @@ namespace BCCH
         // Use this for initialization
         void Start()
         {
-            
+
             tbList = new List<TrackableBehaviour>();
 
             //Debug.LogError(Vuforia.VuforiaARController.Instance.WorldCenter.ToString());
@@ -32,23 +28,19 @@ namespace BCCH
         // Load DataSet, make ModelTarget gameObject and activate it to target tracking
         void LoadDataSet()
         {
-
             objectTracker = TrackerManager.Instance.GetTracker<ObjectTracker>();
-
-            
-            
         }
 
         //public void StartInitVuforia()
         //{
         //    if(VuforiaRuntime.Instance.InitializationState == VuforiaRuntime.InitState.INITIALIZING)
         //    {
-        //        Log.Text(simulationManager.label, "On Pending Last Request");
+        //        Log.Text(SimulationManager.instance.label, "On Pending Last Request");
         //        Debug.Log("On Pending Last Request");
         //    }
         //    else
         //    {
-        //        Log.Text(simulationManager.label, "Start Calibration");
+        //        Log.Text(SimulationManager.instance.label, "Start Calibration");
         //        StartCoroutine("InitVuforia");
         //    }
         //}
@@ -61,14 +53,14 @@ namespace BCCH
         //        yield return new WaitForSeconds(0.3f);
         //        if(VuforiaRuntime.Instance.InitializationState == VuforiaRuntime.InitState.NOT_INITIALIZED)
         //        {
-        //            Log.Text(simulationManager.label, "deint complete");
+        //            Log.Text(SimulationManager.instance.label, "deint complete");
         //            VuforiaRuntime.Instance.InitVuforia();
         //            while (VuforiaRuntime.Instance.InitializationState == VuforiaRuntime.InitState.INITIALIZING)
         //            {
         //                yield return new WaitForSeconds(0.3f);
         //                if (VuforiaRuntime.Instance.InitializationState == VuforiaRuntime.InitState.INITIALIZED)
         //                {
-        //                    simulationManager.uiManager.OnCallMessage("Vuforia Calibrated");
+        //                    SimulationManager.instance.uiManager.OnCallMessage("Vuforia Calibrated");
         //                    goto Finish;
         //                }
         //            }
@@ -78,7 +70,7 @@ namespace BCCH
 
         //Finish:
         //    Debug.Log("Calibration Complete");
-            
+
         //}
 
         /// <summary>
@@ -88,24 +80,24 @@ namespace BCCH
         /// <param name="xmlName">current xml name for this dataset</param>
         public void OnOverlayEnable(string datasetXml)
         {
-            
+
             VuforiaARController.Instance.RegisterVuforiaStartedCallback(LoadDataSet);
             dataSet = objectTracker.CreateDataSet();
 
-            string tempPath = Path.Combine(Application.persistentDataPath, simulationManager.REG_INFO_CurrentContainer);
+            string tempPath = Path.Combine(Application.persistentDataPath, SimulationManager.instance.REG_INFO_CurrentContainer);
             if (dataSet.Load(Path.Combine(tempPath, datasetXml), VuforiaUnity.StorageType.STORAGE_ABSOLUTE))   // load dataset from external source
             {
-                //Log.Text(simulationManager.label, "Loaded xml:" + datasetXml + "\nPath: " + Path.Combine(tempPath, datasetXml));
+                //Log.Text(SimulationManager.instance.label, "Loaded xml:" + datasetXml + "\nPath: " + Path.Combine(tempPath, datasetXml));
                 Debug.Log("Loaded xml:" + datasetXml + "\nPath: " + Path.Combine(tempPath, datasetXml));
                 objectTracker.Stop();  // stop tracker so that we can add new dataset
 
                 if (!objectTracker.ActivateDataSet(dataSet))    // activate dataset
                 {
                     Debug.LogError("<color=red>Failed to Activate DataSet: " + datasetXml + "</color>");
-                    Log.Text(simulationManager.label, "<color=red>Failed to Activate DataSet: " + datasetXml + "</color>");
+                    Log.Text(SimulationManager.instance.label, "<color=red>Failed to Activate DataSet: " + datasetXml + "</color>");
                 }
 
-                //simulationManager.Overlay_OnLostTracked();
+                //SimulationManager.instance.Overlay_OnLostTracked();
 
 
                 //if (tbList[0] != null)
@@ -131,9 +123,9 @@ namespace BCCH
                         (tb as ModelTargetBehaviour).GuideViewMode = ModelTargetBehaviour.GuideViewDisplayMode.GuideView2D; // display guide view
 
                         //VuforiaARController.Instance.SetWorldCenter(tb);
-                        simulationManager.REG_VUFORIA_CurrentTrackable = (tb as ModelTargetBehaviour);
+                        SimulationManager.instance.REG_VUFORIA_CurrentTrackable = (tb as ModelTargetBehaviour);
 
-                        if (simulationManager.REG_CurrentObject_Spawned != null && simulationManager.CHECK_downloadComplete)
+                        if (SimulationManager.instance.REG_CurrentObject_Spawned != null && SimulationManager.instance.CHECK_downloadComplete)
                         {
                             //ATTENTION: Vuforia will create its own coordination system base on device pose,
                             //however, it is not synchronized with unity's coordination system. And two
@@ -160,7 +152,7 @@ namespace BCCH
                             //about 30 mins in total. And since we are running out of time, we haven't got chance to examing
                             //our hypothesis. If you wants fix this issue, we hope this might give you some help.
 
-                            //(btw, we are using a script called "SepCameraPosIndicator" to detect the offset value.
+                            //(btw, we are using a class called "CameraPosIndicator" to detect the offset value.
                             //it will automatically detect the first time when camera position is not Vector3.zero and
                             //record it's position and rotation information to Simulation Manager that allows us to utilize.)
 
@@ -168,60 +160,60 @@ namespace BCCH
 
                             //Establish new calibrated coordination
                             GameObject calibrateObject = Instantiate(
-                                simulationManager.HOLDER_OverlayCalibration, 
-                                simulationManager.REG_VUFORIA_CurrentTrackable.transform);
+                                SimulationManager.instance.HOLDER_OverlayCalibration,
+                                SimulationManager.instance.REG_VUFORIA_CurrentTrackable.transform);
                             calibrateObject.transform.localPosition = Vector3.zero;
                             calibrateObject.transform.localRotation = Quaternion.identity;
 
                             //calibrateObject.transform.localRotation = Quaternion.Euler(
-                            //    -simulationManager.REG_CALIBRATION_CameraInitRot.x,
-                            //    -simulationManager.REG_CALIBRATION_CameraInitRot.y,
-                            //    -simulationManager.REG_CALIBRATION_CameraInitRot.z);
+                            //    -SimulationManager.instance.REG_CALIBRATION_CameraInitRot.x,
+                            //    -SimulationManager.instance.REG_CALIBRATION_CameraInitRot.y,
+                            //    -SimulationManager.instance.REG_CALIBRATION_CameraInitRot.z);
 
                             //calibrateObject.transform.rotation.Set(0, 0, 0, 1);
                             //calibrateObject.transform.localRotation.Set(
-                            //    0-simulationManager.REG_CALIBRATION_CameraInitRot.x,
-                            //    0-simulationManager.REG_CALIBRATION_CameraInitRot.y,
-                            //    0-simulationManager.REG_CALIBRATION_CameraInitRot.z,
+                            //    0-SimulationManager.instance.REG_CALIBRATION_CameraInitRot.x,
+                            //    0-SimulationManager.instance.REG_CALIBRATION_CameraInitRot.y,
+                            //    0-SimulationManager.instance.REG_CALIBRATION_CameraInitRot.z,
                             //    )
 
-                            //simulationManager.uiManager.OnCallMessage("world: \n" + calibrateObject.transform.rotation.ToString() + "\n" + calibrateObject.transform.localRotation.ToString());
+                            //SimulationManager.instance.uiManager.OnCallMessage("world: \n" + calibrateObject.transform.rotation.ToString() + "\n" + calibrateObject.transform.localRotation.ToString());
 
                             //REG_CurrentObject_Spawned.transform.parent = REG_ANCHOR_VuforiaTrackable;
-                            simulationManager.REG_CurrentObject_Spawned.transform.parent = calibrateObject.transform;
+                            SimulationManager.instance.REG_CurrentObject_Spawned.transform.parent = calibrateObject.transform;
 
 
                             //25
-                            //simulationManager.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero + simulationManager.REG_CALIBRATION_CameraInitPos;
+                            //SimulationManager.instance.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero + SimulationManager.instance.REG_CALIBRATION_CameraInitPos;
 
                             //26
-                            //simulationManager.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero - simulationManager.REG_CALIBRATION_CameraInitPos;
+                            //SimulationManager.instance.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero - SimulationManager.instance.REG_CALIBRATION_CameraInitPos;
 
                             //29
-                            //simulationManager.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero + transform.InverseTransformDirection(simulationManager.REG_CALIBRATION_CameraInitPos);
+                            //SimulationManager.instance.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero + transform.InverseTransformDirection(SimulationManager.instance.REG_CALIBRATION_CameraInitPos);
 
-                            
-                            simulationManager.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero;
+
+                            SimulationManager.instance.REG_CurrentObject_Spawned.transform.localPosition = Vector3.zero;
                             //REG_CurrentObject_Spawned.transform.rotation = REG_ANCHOR_VuforiaTrackable.rotation;
-                            simulationManager.REG_CurrentObject_Spawned.transform.localRotation = Quaternion.identity;
-                            simulationManager.REG_CurrentObject_Spawned.transform.localScale = Vector3.one;
+                            SimulationManager.instance.REG_CurrentObject_Spawned.transform.localRotation = Quaternion.identity;
+                            SimulationManager.instance.REG_CurrentObject_Spawned.transform.localScale = Vector3.one;
                         }
 
                         // add additional script components for trackable
                         //tb.gameObject.AddComponent<DefaultTrackableEventHandler>();
                         tb.gameObject.AddComponent<SepOnListening>();
                         tb.GetComponent<SepOnListening>().overlayManager = this;
-                        tb.GetComponent<SepOnListening>().simulationManager = simulationManager;
+                        tb.GetComponent<SepOnListening>().SimulationManager.instance = SimulationManager.instance;
                         tb.gameObject.AddComponent<TurnOffBehaviour>();
                         // GameObject.Find("Tracking").GetComponent<Tracking>().targetObject = tb.gameObject;   // Tracking status visualization - my own Canvas panel script 
                     }
                     else
                     {
                         tb.gameObject.SetActive(false);
-                        if (simulationManager.REG_CurrentObject_Spawned != null && simulationManager.CHECK_downloadComplete)
+                        if (SimulationManager.instance.REG_CurrentObject_Spawned != null && SimulationManager.instance.CHECK_downloadComplete)
                         {
-                            simulationManager.REG_CurrentObject_Spawned.transform.parent = null;
-                            
+                            SimulationManager.instance.REG_CurrentObject_Spawned.transform.parent = null;
+
                         }
                     }
 
@@ -229,14 +221,14 @@ namespace BCCH
                 if (!objectTracker.Start()) // start tracking
                 {
                     Debug.LogError("<color=red>Tracker Failed to Start.</color>");
-                    Log.Text(simulationManager.label, "<color=red>Tracker Failed to Start.</color>");
+                    Log.Text(SimulationManager.instance.label, "<color=red>Tracker Failed to Start.</color>");
                 }
 
             }
             else
             {
-                Log.Text(simulationManager.label, "<color=red>Failed to load dataset: '" + simulationManager.REG_INFO_VuforiaDataName_Xml + "'</color>");
-                Debug.LogError("<color=red>Failed to load dataset: '" + simulationManager.REG_INFO_VuforiaDataName_Xml + "'</color>");
+                Log.Text(SimulationManager.instance.label, "<color=red>Failed to load dataset: '" + SimulationManager.instance.REG_INFO_VuforiaDataName_Xml + "'</color>");
+                Debug.LogError("<color=red>Failed to load dataset: '" + SimulationManager.instance.REG_INFO_VuforiaDataName_Xml + "'</color>");
             }
 
 
@@ -251,7 +243,7 @@ namespace BCCH
 
             DeactivateActiveDataSets(true);
 
-            //Destroy(simulationManager.REG_VUFORIA_CurrentTrackable.gameObject);
+            //Destroy(SimulationManager.instance.REG_VUFORIA_CurrentTrackable.gameObject);
         }
 
 
@@ -264,32 +256,19 @@ namespace BCCH
                 // The VuforiaEmulator.xml dataset (used by GroundPlane) is managed by Vuforia.
                 if (!ds.Path.Contains("VuforiaEmulator.xml"))
                 {
-                    Log.Text(simulationManager.label, "Overlay Deactivated");
+                    Log.Text(SimulationManager.instance.label, "Overlay Deactivated");
                     Debug.Log("Deactivating: " + ds.Path);
                     this.objectTracker.DeactivateDataSet(ds);
                     if (destroyDataSets)
                     {
-                        //Log.Text(simulationManager.label, "Overlay Deactivated");
-                        //Log.Text(simulationManager.label, "Destroyed: " + ds.Path);
+                        //Log.Text(SimulationManager.instance.label, "Overlay Deactivated");
+                        //Log.Text(SimulationManager.instance.label, "Destroyed: " + ds.Path);
                         Debug.Log("Destroyed: " + ds.Path);
                         this.objectTracker.DestroyDataSet(ds, true);
                     }
                 }
             }
         }
-
-
-
-
-
-
-
-
-
-
-
-
-
     }
 }
 

@@ -6,19 +6,15 @@ using Azure.StorageServices;
 
 namespace BCCH
 {
-    public class SepFileImport : MonoBehaviour
+    public class FileImport : MonoBehaviour
     {
         #region CORE ATTACHMENT
 
-        [HideInInspector]
-        public SimulationManager simulationManager;
-        [HideInInspector]
-        public SepUiManager uiManager;
 
         [HideInInspector]
         public List<string> fileNameList;
 
-        
+
 
         public BlobService blobService;
 
@@ -56,21 +52,13 @@ namespace BCCH
 
         #region CORE METHODS
 
-        private void Start()
-        {
-            simulationManager = GameObject.FindGameObjectWithTag("GameController").GetComponent<SimulationManager>();
-            //fileNameList = new List<string>();
-
-            //fileNameList_MultiMedia = new List<string>();
-            //blobService = simulationManager.client.GetBlobService();
-        }
 
 
         public void FileCheck_FBX()
         {
             for (int i = 0; i < fileNameList.Count; i++)
             {
-                if (simulationManager.textProfilier.TextProfilier(fileNameList[i], "fbx"))
+                if (SimulationManager.instance.textProfilier.TextProfilier(fileNameList[i], "fbx"))
                 {
                     Debug.Log("File name check complete at: " + fileNameList[i]);
                     fbxExist = true;
@@ -80,15 +68,15 @@ namespace BCCH
             }
             if (!fbxExist)
             {
-                uiManager.OnDeleteButton_Import(this.gameObject);
+                UiManager.instance.OnDeleteButton_Import(this.gameObject);
             }
         }
 
         public void FileCheck_Dat()
         {
-            for(int i = 0; i < fileNameList.Count; i++)
+            for (int i = 0; i < fileNameList.Count; i++)
             {
-                if (simulationManager.textProfilier.TextProfilier(fileNameList[i], "dat"))
+                if (SimulationManager.instance.textProfilier.TextProfilier(fileNameList[i], "dat"))
                 {
                     if (downloadInfo_VuforiaName_Xml != null)
                     {
@@ -104,7 +92,7 @@ namespace BCCH
         {
             for (int i = 0; i < fileNameList.Count; i++)
             {
-                if (simulationManager.textProfilier.TextProfilier(fileNameList[i], "xml"))
+                if (SimulationManager.instance.textProfilier.TextProfilier(fileNameList[i], "xml"))
                 {
                     if (downloadInfo_VuforiaName_Dat != null)
                     {
@@ -121,7 +109,7 @@ namespace BCCH
             for (int i = 0; i < fileNameList.Count; i++)
             {
                 bool check = false;
-                switch (simulationManager.textProfilier.GetFormat(fileNameList[i]))
+                switch (SimulationManager.instance.textProfilier.GetFormat(fileNameList[i]))
                 {
                     case "jpg":
                         check = true;
@@ -149,7 +137,7 @@ namespace BCCH
 
         public void ListBlobs()
         {
-            //Log.Text(simulationManager.label, "Listing blobs");
+            //Log.Text(SimulationManager.instance.label, "Listing blobs");
             Debug.Log("Listing blobs");
             StartCoroutine(blobService.ListBlobs(ListBlobsCompleted, downloadInfo_Container));
         }
@@ -158,11 +146,11 @@ namespace BCCH
         {
             if (response.IsError)
             {
-                Log.Text(simulationManager.label, "Failed to get list of blobs", "List blob error: " + response.ErrorMessage, Log.Level.Error);
+                Log.Text(SimulationManager.instance.label, "Failed to get list of blobs", "List blob error: " + response.ErrorMessage, Log.Level.Error);
                 return;
             }
 
-            
+
             Debug.Log("Loaded blobs: " + response.Data.Blobs.Length);
             ReloadTable(response.Data.Blobs);
         }
@@ -172,67 +160,62 @@ namespace BCCH
 
             for (int i = 0; i < blobs.Length; i++)
             {
-                fileNameList.Add(blobs[i].Name);
-                Debug.Log("On adding blob number: " + i + "\nname: " + fileNameList[i]);
+                FileCheck_FBX();
+                FileCheck_Dat();
+                FileCheck_Xml();
+                FileCheck_MultiMedia();
             }
-            FileCheck_FBX();
-            FileCheck_Dat();
-            FileCheck_Xml();
-            FileCheck_MultiMedia();
         }
-
         public void OnTappedLoadFile()
         {
-            if (simulationManager.CHECK_startDownloading && !simulationManager.CHECK_downloadComplete)
+            if (SimulationManager.instance.CHECK_startDownloading && !SimulationManager.instance.CHECK_downloadComplete)
             {
-                Log.Text(simulationManager.label, "On Pending Last Request");
+                Log.Text(SimulationManager.instance.label, "On Pending Last Request");
                 Debug.Log("On Pending Last Request");
                 return;
             }
-            if (simulationManager.CHECK_startDownloading_dat || simulationManager.CHECK_startDownloading_xml)
+            if (SimulationManager.instance.CHECK_startDownloading_dat || SimulationManager.instance.CHECK_startDownloading_xml)
             {
-                Log.Text(simulationManager.label, "On Pending Last Request");
+                Log.Text(SimulationManager.instance.label, "On Pending Last Request");
                 Debug.Log("On Pending Last Request");
                 return;
             }
             if (fbxExist)
             {
                 //Initiate REG object
-                simulationManager.REMOVE_CurrentObject();
-                
-
-                simulationManager.byteLoader.fileName = downloadInfo_FileName;
-                simulationManager.byteLoader.container = downloadInfo_Container;
-                simulationManager.REG_INFO_CurrentFileName_Fbx = downloadInfo_FileName;
-                simulationManager.REG_INFO_CurrentContainer = downloadInfo_Container;
-                simulationManager.REG_INFO_IsVuforiaExist = vuforiaDataseExist;
-                simulationManager.REG_INFO_VuforiaDataName_Dat = downloadInfo_VuforiaName_Dat;
-                simulationManager.REG_INFO_VuforiaDataName_Xml = downloadInfo_VuforiaName_Xml;
-                simulationManager.REG_INFO_CurrentVuforiaDataset = simulationManager.textProfilier.GetNameWithoutFormat(downloadInfo_VuforiaName_Xml);
+                SimulationManager.instance.REMOVE_CurrentObject();
 
 
-                Debug.Log("on tapped file import, multi media count:" + fileNameList_MultiMedia.Count);
-                for(int i = 0; i < fileNameList_MultiMedia.Count; i++)
+                SimulationManager.instance.byteLoader.fileName = downloadInfo_FileName;
+                SimulationManager.instance.byteLoader.container = downloadInfo_Container;
+                SimulationManager.instance.REG_INFO_CurrentFileName_Fbx = downloadInfo_FileName;
+                SimulationManager.instance.REG_INFO_CurrentContainer = downloadInfo_Container;
+                SimulationManager.instance.REG_INFO_IsVuforiaExist = vuforiaDataseExist;
+                SimulationManager.instance.REG_INFO_VuforiaDataName_Dat = downloadInfo_VuforiaName_Dat;
+                SimulationManager.instance.REG_INFO_VuforiaDataName_Xml = downloadInfo_VuforiaName_Xml;
+                SimulationManager.instance.REG_INFO_CurrentVuforiaDataset = SimulationManager.instance.textProfilier.GetNameWithoutFormat(downloadInfo_VuforiaName_Xml);
+
+
+
+                for (int i = 0; i < fileNameList_MultiMedia.Count; i++)
                 {
-                    simulationManager.REG_List_CurrentFileList_MultiMedia.Add(fileNameList_MultiMedia[i]);
+                    SimulationManager.instance.REG_List_CurrentFileList_MultiMedia.Add(fileNameList_MultiMedia[i]);
                 }
-                //simulationManager.REG_List_CurrentFileList_MultiMedia = fileNameList_MultiMedia;
-                simulationManager.byteLoader.TappedLoadByte();
+                //SimulationManager.instance.REG_List_CurrentFileList_MultiMedia = fileNameList_MultiMedia;
+                SimulationManager.instance.byteLoader.TappedLoadByte();
                 if (vuforiaDataseExist)
                 {
-                    simulationManager.byteLoader.PreDownloadVuforiaDataset(downloadInfo_VuforiaName_Dat, downloadInfo_VuforiaName_Xml);
+                    SimulationManager.instance.byteLoader.PreDownloadVuforiaDataset(downloadInfo_VuforiaName_Dat, downloadInfo_VuforiaName_Xml);
                 }
-                uiManager.OnDisableMenu_All();
+                UiManager.instance.OnDisableMenu_All();
             }
             else
             {
-                Log.Text(simulationManager.label, "NO FBX FOUND");
+                Log.Text(SimulationManager.instance.label, "NO FBX FOUND");
             }
-            
+
         }
 
         #endregion
-
     }
 }
-

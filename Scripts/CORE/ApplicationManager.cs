@@ -6,18 +6,17 @@ namespace BCCH
 {
     public class ApplicationManager : MonoBehaviour
     {
-        public SimulationManager simulationManager;
         public void Quit()
         {
+#if UNITY
 #if UNITY_EDITOR
             
             UnityEditor.EditorApplication.isPlaying = false;
 #else
-            
-            simulationManager.REMOVE_CurrentObject();
+imulationManager.instance.REMOVE_CurrentObject();
             Application.Quit();
+#endif
 #endif
         }
     }
 }
-

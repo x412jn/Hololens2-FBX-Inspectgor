@@ -7,10 +7,8 @@ using Vuforia;
 
 namespace BCCH
 {
-    public class SepOnListening : MonoBehaviour
+    public class OnListening : MonoBehaviour
     {
-        
-
         public enum TrackingStatusFilter
         {
             Tracked,
@@ -26,17 +24,13 @@ namespace BCCH
         /// </summary>
         public TrackingStatusFilter StatusFilter = TrackingStatusFilter.Tracked;
 
-        //SEPTIM
 
-        public SepOverlayManager overlayManager;
-        public SimulationManager simulationManager;
+        public OverlayManager overlayManager;
 
 
         public GameObject targetObject;
         public LayerMask mask;
 
-
-        //SEPTIM
 
         protected TrackableBehaviour mTrackableBehaviour;
         protected TrackableBehaviour.Status m_PreviousStatus;
@@ -74,8 +68,8 @@ namespace BCCH
                 mTrackableBehaviour.TrackableName,
                 mTrackableBehaviour.CurrentStatus,
                 mTrackableBehaviour.CurrentStatusInfo);
-            //Log.Text(simulationManager.label, "Overlay Status: " + mTrackableBehaviour.CurrentStatus + "\n" + mTrackableBehaviour.CurrentStatusInfo);
-            //Log.Text(simulationManager.label_Overlay, "Overlay Status: " + mTrackableBehaviour.CurrentStatus);
+            //Log.Text(SimulationManager.instance.label, "Overlay Status: " + mTrackableBehaviour.CurrentStatus + "\n" + mTrackableBehaviour.CurrentStatusInfo);
+            //Log.Text(SimulationManager.instance.label_Overlay, "Overlay Status: " + mTrackableBehaviour.CurrentStatus);
 
             HandleTrackableStatusChanged();
         }
@@ -173,13 +167,13 @@ namespace BCCH
 
             //gameObject.transform.position = targetPosition - factoredDelta;
 
-            simulationManager.Overlay_OnTracked();
+            SimulationManager.instance.Overlay_OnTracked();
 
         }
 
         protected virtual void OnTrackingLost()
         {
-            simulationManager.Overlay_OnLostTracked();
+            SimulationManager.instance.Overlay_OnLostTracked();
         }
     }
 }

@@ -6,8 +6,6 @@ namespace BCCH
 {
     public class SepTextProfilier : MonoBehaviour
     {
-        [SerializeField]
-        SimulationManager simulationManager;
 
         /// <summary>
         /// LEGACY METHOD FOR GETTING IP ADDRESS, DO NOT USE
@@ -53,7 +51,7 @@ namespace BCCH
                 }
 
                 //Detect wether it is ending keyword or not
-                if(checkedStartingWord && !checkedEndingWord && checkTimeStartingWord == 0)
+                if (checkedStartingWord && !checkedEndingWord && checkTimeStartingWord == 0)
                 {
                     if (inputArray[i] == endingWordArray[checkTimeEndingWord])
                     {
@@ -85,7 +83,7 @@ namespace BCCH
                 Debug.Log("CONVERTING char to string" + j);
                 targetWordArray[j] = targetWordList[j];
             }
-            
+
             //targetWord = targetWordArray.ToString();
             targetWord = new string(targetWordArray);
 
@@ -166,7 +164,7 @@ namespace BCCH
                         {
                             //stopping point
                             char[] targetWordCharHolder = new char[targetWordList.Count];
-                            for(int j = 0; j < targetWordCharHolder.Length; j++)
+                            for (int j = 0; j < targetWordCharHolder.Length; j++)
                             {
                                 targetWordCharHolder[j] = targetWordList[j];
                             }
@@ -193,7 +191,7 @@ namespace BCCH
             targetWords = new string[targetWordsList.Count];
 
             //put string list into string array in order to output
-            for(int i = 0; i < targetWordsList.Count; i++)
+            for (int i = 0; i < targetWordsList.Count; i++)
             {
                 targetWords[i] = targetWordsList[i];
             }
@@ -208,7 +206,7 @@ namespace BCCH
         /// <param name="input">input file name that need to be checked</param>
         /// <param name="keyword_format">input file format</param>
         /// <returns></returns>
-        public bool TextProfilier(string input,string keyword_format)
+        public bool TextProfilier(string input, string keyword_format)
         {
             bool keywordMatch = false;
             bool dotMatch = false;
@@ -244,14 +242,14 @@ namespace BCCH
                     {
                         aquiredList_format.Add(inputArray[i]);
                     }
-                    
+
                 }
             }
 
             //if there is no dot detected, return false and alarm
             if (!dotMatch)
             {
-                Log.Text(simulationManager.label, "No format info found on input string", "No format info found on input string", Log.Level.Error);
+                Log.Text(SimulationManager.instance.label, "No format info found on input string", "No format info found on input string", Log.Level.Error);
                 return false;
             }
 
@@ -329,7 +327,7 @@ namespace BCCH
             //if there is no dot detected, return false and alarm
             if (!dotMatch)
             {
-                Log.Text(simulationManager.label, "No format info found on input string", "No format info found on input string", Log.Level.Error);
+                Log.Text(SimulationManager.instance.label, "No format info found on input string", "No format info found on input string", Log.Level.Error);
                 return null;
             }
 
@@ -377,7 +375,7 @@ namespace BCCH
             if (dotMatch)
             {
                 aquiredArray_Output = new char[aquiredList_Output.Count];
-                for(int i = 0; i < aquiredArray_Output.Length; i++)
+                for (int i = 0; i < aquiredArray_Output.Length; i++)
                 {
                     //Debug.Log("CONVERTING char to string" + i);
                     aquiredArray_Output[i] = aquiredList_Output[i];
@@ -391,7 +389,7 @@ namespace BCCH
                 return null;
             }
 
-            
+
         }
     }
 }
